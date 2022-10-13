@@ -16,10 +16,12 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DatePipe } from '@angular/common';
+import { StockValuesComponent } from './components/stock-values/stock-values.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    StockValuesComponent
   ],
   imports: [
     BrowserModule,

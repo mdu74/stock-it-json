@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
-import { catchError, map, Observable, of } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of } from 'rxjs';
 import { Stock } from '../interfaces/stock';
 import { StockValue } from '../interfaces/stock-values';
 import { StockRequest } from '../interfaces/stock-request';
@@ -12,8 +12,17 @@ import { ApiSettings } from 'src/global-constants/api-settings';
   providedIn: 'root'
 })
 export class StockService {
+  private stockValueCount$ = new BehaviorSubject<number>(0);
 
   constructor(private readonly http: HttpClient) { }
+
+  updateStockValueCounter(length: number){
+    this.stockValueCount$.next(length);
+  }
+
+  getResultLength(){
+    return this.stockValueCount$.asObservable();
+  }
 
   getAllStock(){
     return this.http.get<Stock[]>(`${ApiSettings.URL}/Stock/GetAll`)

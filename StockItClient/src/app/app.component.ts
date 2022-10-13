@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Stock } from './interfaces/stock';
 import { StockService } from './services/stock.service';
 import { MatPaginator } from '@angular/material/paginator';
@@ -10,7 +10,8 @@ import { StockDetails } from './interfaces/stock-details';
 import { ReplaySubject } from 'rxjs/internal/ReplaySubject';
 import { StockDetailsRequest } from './interfaces/stock-details-request';
 import { DatePipe } from '@angular/common';
-import Swal from 'sweetalert2';
+import { Subject } from 'rxjs/internal/Subject';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -24,16 +25,14 @@ export class AppComponent implements OnInit {
   stockSelection = new SelectionModel<Stock>(true, []);
   displayedStockColumns: string[] = ['select', 'id', 'stock', 'industry', 'currency_code', 'sector'];
   dataStockSource!: MatTableDataSource<Stock>;
-  displayedStockValueColumns: string[] = ['stock', 'date', 'value'];
   dataStockValueSource!: MatTableDataSource<StockDetails>;
-  request: StockRequest | undefined ;
-  resultsLength = 0;
-  header: string = 'No Stock Selected';
+  resultsLength$ = new Subject<number>();
+  selectedHeader: string = 'No Stock Selected';
 
   @ViewChild(MatPaginator) stockPaginator!: MatPaginator;
   @ViewChild(MatSort) stockSort!: MatSort;
   
-  private _stockStream = new ReplaySubject<Stock[]>();
+  _stockStream = new ReplaySubject<Stock[]>();
 
   constructor(private readonly stockService: StockService, private readonly datepipe: DatePipe){}
 
@@ -46,7 +45,6 @@ export class AppComponent implements OnInit {
       this.stockIsLoading = false;
     });
 
-    this.dataStockValueSource = new MatTableDataSource(undefined);
   }
 
   applyStockFilter(event: Event) {
@@ -55,15 +53,6 @@ export class AppComponent implements OnInit {
 
     if (this.dataStockSource.paginator) {
       this.dataStockSource.paginator.firstPage();
-    }
-  }
-
-  applyStockValueFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataStockValueSource.filter = filterValue.trim().toLowerCase();
-
-    if (this.dataStockValueSource.paginator) {
-      this.dataStockValueSource.paginator.firstPage();
     }
   }
 
@@ -90,14 +79,6 @@ export class AppComponent implements OnInit {
     return `${this.stockSelection.isSelected(row) ? 'deselect' : 'select'} row ${row.id + 1}`;
   }
 
-  clearTable() {
-    this.dataStockValueSource.data = [];
-    this.request = undefined;
-    this._stockStream.next([]);
-    this.header = 'No Stock Selected';
-    this.stockSelection.clear();
-  }
-
   addData() {
     this.stockValueIsLoading = true;
     let request: StockRequest = {
@@ -110,34 +91,18 @@ export class AppComponent implements OnInit {
       request.ids.push(stock.id);
     });
     const headerCollection = Array.from(new Set(stockCollection));
-    this.header = headerCollection.join(', ');
+    this.selectedHeader = headerCollection.join(', ');
        
-    this.stockService.getSelectedStockDetails(request).subscribe((response: StockDetails[]) => {
+    this.stockService.getSelectedStockDetails(request)
+      .pipe(map(response => {
+        this.stockService.updateStockValueCounter(response.length);
+        return response;
+      }))
+      .subscribe((response: StockDetails[]) => {
       this.dataStockValueSource = new MatTableDataSource(response);
-      this.resultsLength = response.length;
+      this.resultsLength$.next(response.length);
       this._stockStream.next(this.stockSelection.selected);
       this.stockValueIsLoading = false;
-    });
-  }
-
-  onExportJson(): void {
-    const date = new Date();
-    const currentDateTime = this.datepipe.transform(date, 'dd-MM-yyyy HH:mm:ss');
-    const stockDetails: StockDetailsRequest = {
-      fileName: `${this.header} ${currentDateTime}`,
-      stockDetails: this.dataStockValueSource.data
-    };
-
-    this.stockService.createSelectedStockFile(stockDetails).subscribe(response => {
-      if (response) {
-        Swal.fire({  
-          position: 'top-end',  
-          icon: 'success',  
-          title: `Your file has been saved as ${stockDetails.fileName}.`,  
-          showConfirmButton: false,  
-          timer: 3000  
-        }); 
-      }
     });
   }
 }
