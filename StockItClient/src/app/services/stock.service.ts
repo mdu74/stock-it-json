@@ -32,14 +32,6 @@ export class StockService {
                         );
   }
 
-  getAllStockValues(){
-    return this.http.get<StockValue[]>(`${ApiSettings.URL}/Stock/GetAllValues`)
-                    .pipe(
-                          map(res => res), 
-                          catchError(this.handleError<StockValue[]>("Get all values ", []))
-                        );
-  }
-
   getSelectedStockDetails(stock: StockRequest){
     return this.http.post<StockDetails[]>(`${ApiSettings.URL}/Stock/GetSelectedDetails`, stock)
                     .pipe(

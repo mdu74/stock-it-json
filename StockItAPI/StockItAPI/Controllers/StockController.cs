@@ -27,15 +27,6 @@ public class StockController : ControllerBase
         return Ok(stocks);
     }
 
-    [HttpGet]
-    [Route("/Stock/GetAllValues")]
-    public async Task<ActionResult<List<StockValue>>> GetAllStockValues()
-    {
-        var stockValuesResult = await _stockServices.getStockValues();
-
-        return Ok(stockValuesResult);
-    }
-
     [HttpPost]
     [Route("/Stock/GetSelectedDetails")]
     public async Task<ActionResult<List<StockDetails>>> GetSelectedStockDetails(StockValuesRequest? request)
