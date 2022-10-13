@@ -32,7 +32,7 @@ export class StockValuesComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  applyStockValueFilter(event: Event) {
+  applyStockValueFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataStockValueSource.filter = filterValue.trim().toLowerCase();
 
@@ -41,7 +41,7 @@ export class StockValuesComponent implements OnInit {
     }
   }
 
-  clearTable() {
+  clearTable(): void {
     this.dataStockValueSource.data = [];
     this._stockStream.next([]);
     this.header = 'No Stock Selected';
@@ -50,12 +50,7 @@ export class StockValuesComponent implements OnInit {
   }
 
   onExportJson(): void {
-    const date = new Date();
-    const currentDateTime = this.datepipe.transform(date, 'dd-MM-yyyy HH:mm:ss');
-    const stockDetails: StockDetailsRequest = {
-      fileName: `${this.header} ${currentDateTime}`,
-      stockDetails: this.dataStockValueSource.data
-    };
+    const stockDetails = this.setStockDetailRequest();
 
     this.stockService.createSelectedStockFile(stockDetails).subscribe(response => {
       if (response) {
@@ -70,4 +65,14 @@ export class StockValuesComponent implements OnInit {
     });
   }
 
+  private setStockDetailRequest(): StockDetailsRequest {
+    const date = new Date();
+    const currentDateTime = this.datepipe.transform(date, 'dd-MM-yyyy HH:mm:ss');
+    const stockDetails: StockDetailsRequest = {
+      fileName: `${this.header} ${currentDateTime}`,
+      stockDetails: this.dataStockValueSource.data
+    };
+
+    return stockDetails;
+  }
 }

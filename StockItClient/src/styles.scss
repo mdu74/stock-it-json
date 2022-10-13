@@ -6,14 +6,38 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 table {
     width: 100%;
 }
-  
+
 .mat-form-field {
     font-size: 14px;
     width: 100%;
 }
-  
-td, th {
-    width: 16.67%;
+
+@mixin flex-values($basis) {
+    flex: 0 0 $basis;
+  } 
+
+.mat-column-select {
+    @include flex-values(15%);
+}
+
+.mat-column-id {
+    @include flex-values(15%);
+}
+
+.mat-column-stock {
+    @include flex-values(35%);
+}
+
+.mat-column-industry {
+    @include flex-values(15%);
+}
+
+.mat-column-sector {
+    @include flex-values(15%);
+}
+
+.mat-column-currency_code {
+    @include flex-values(15%);
 }
 
 mat-card {

@@ -91,14 +91,19 @@
     </mat-card>
   </div>
 
-  <div class="row">      
-    <app-stock-values
+  <div class="row">  
+    <div *ngIf="stockValueIsLoading; else showStockValues">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </div>    
+    <ng-template #showStockValues>
+      <app-stock-values
       [header] = "selectedHeader"
       [selectedStockLength] = "stockSelection.selected.length"
       [stockSelection] = "stockSelection"
       [_stockStream] = "_stockStream"
       [dataStockValueSource] = "dataStockValueSource"
     >
-    </app-stock-values>  
+    </app-stock-values>
+    </ng-template>      
   </div>
 </div>
